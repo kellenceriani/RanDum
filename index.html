@@ -5,7 +5,25 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>RanDumBaseball! Draft</title>
   <link rel="stylesheet" href="style.css" />
- 
+  <style>
+    #sidebar {
+      position: fixed;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 300px;
+      background: #f7f7f7;
+      border-left: 1px solid #ccc;
+      overflow-y: auto;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      z-index: 999;
+      padding: 1em;
+    }
+    #sidebar.open { transform: translateX(0); }
+    #toggleSidebar { position: fixed; right: 0; top: 50px; z-index: 1000; background: #007bff; color: white; padding: 0.5em; cursor: pointer; }
+    #timerDisplay { font-size: 1.2em; color: red; margin-top: 0.5em; }
+  </style>
 </head>
 <body>
   <main>
@@ -28,6 +46,7 @@
             Enable Locked Position Mode (fixed positions, adjustable batting order)
         </label>
     </div>
+          
     <div class="row">
         <label for="rosterTypeSelect">Roster Type:</label>
         <select id="rosterTypeSelect">
@@ -37,6 +56,18 @@
             <option value="small">Small (5 picks)</option>
         </select>
     </div>
+<div class="row">
+  <label>
+    <input type="checkbox" id="enableTimerCheckbox" checked />
+    Enable Timer Mode
+  </label>
+</div>
+<div class="row" id="timerControls">
+  <label for="timeSlider">Seconds per pick:</label>
+  <input type="range" id="timeSlider" min="5" max="120" value="30" />
+  <span id="timeValue">30</span>s
+</div>
+
 
       <button id="startDraftBtn">Start Draft</button>
     </section>
@@ -46,11 +77,10 @@
         Category: <span id="categoryDisplay"></span>
         <span id="categoryCounter" style="font-size: 0.6em; color: red; margin-left: 0.5em;"></span>
     </h2>
-
+      <div id="timerDisplay"></div>
       <div id="draftArea"></div>
       <button id="finishDraftBtn" class="hidden">Finish Draft & Generate Prompt</button>
     </section>
-
     <section id="resultSection" class="hidden">
       <h2>Draft Summary & Prompt</h2>
       <textarea id="promptOutput" readonly rows="12"></textarea>
@@ -61,8 +91,19 @@
       </div>
     </section>
   </main>
+  <div id="toggleSidebar">▶ Picks</div>
+  <div id="sidebar">
+    <h3>Picks</h3>
+    <select id="sortMode">
+      <option value="round">Sort by Round</option>
+      <option value="player">Sort by Player</option>
+      <option value="position">Sort by Position</option>
+    </select>
+    <ul id="picksList"></ul>
+  </div>
 
- <script src="app.js"></script>
+<script src="app.js"></script>
 <script src="categories.js"></script>
+<script src="PicksAndTime.js"></script>
 </body>
 </html>

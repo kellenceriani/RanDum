@@ -251,7 +251,7 @@ if (remainingPositions.length > 0) {
           if (battingOrder && p.lineup.find(l => l.battingOrder === battingOrder)) return alert("Batting slot taken.");
 
           p.lineup.push({ character, position, category: currentCategory, battingOrder });
-
+        recordPick(p.name, position, character, currentCategory, Math.floor(currentPick / players.length) + 1);
           currentPick++;
 
           if (players.every(pl => pl.lineup.length === activeRoster.positions.length)) {
