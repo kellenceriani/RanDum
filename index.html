@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>RanDumBaseball! Draft</title>
+  <link rel="stylesheet" href="style.css" />
+ 
+</head>
+<body>
+  <main>
+    <h1>RanDumBaseball! Draft</h1>
+    <section id="setup">
+      <div class="row">
+        <label for="playerCount">Number of players (2-8):</label>
+        <input type="number" id="playerCount" min="2" max="8" value="2" />
+      </div>
+      <div id="playersContainer"></div>
+      <div class="row">
+        <label>
+          <input type="checkbox" id="snakeDraftCheckbox" />
+          Enable Snake Draft Mode
+        </label>
+      </div>
+      <button id="startDraftBtn">Start Draft</button>
+    </section>
+
+    <section id="draftSection" class="hidden">
+      <h2>Category: <span id="categoryDisplay"></span></h2>
+      <div id="draftArea"></div>
+      <button id="finishDraftBtn" class="hidden">Finish Draft & Generate Prompt</button>
+    </section>
+
+    <section id="resultSection" class="hidden">
+      <h2>Draft Summary & Prompt</h2>
+      <textarea id="promptOutput" readonly rows="12"></textarea>
+      <div style="margin-top: 1em;">
+        <button id="copyPromptBtn">Copy Prompt</button>
+        <button id="editPromptBtn">Edit Prompt</button>
+        <a href="https://chat.openai.com/chat" target="_blank" rel="noopener" style="margin-left:1em;">Go to ChatGPT</a>
+      </div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

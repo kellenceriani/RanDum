@@ -1,0 +1,331 @@
+/* General Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f4f9;
+  color: #1e2a38;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+}
+
+main {
+  max-width: 700px;
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+  padding: 2rem 2.5rem;
+  user-select: none;
+}
+
+/* Headings */
+h1 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #0b3d91;
+  font-weight: 900;
+  font-size: 2.4rem;
+  letter-spacing: 0.06em;
+  user-select: text;
+}
+
+h2 {
+  color: #0b3d91;
+  font-weight: 700;
+  margin-top: 0;
+  margin-bottom: 1rem;
+  border-bottom: 2px solid #0b3d91;
+  padding-bottom: 0.25rem;
+}
+
+h3 {
+  margin: 0.25rem 0 0.75rem 0;
+  color: #1257bf;
+  font-weight: 600;
+}
+
+/* Sections */
+section {
+  margin-bottom: 2rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Setup section */
+
+.row {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: 600;
+  min-width: 190px;
+  user-select: none;
+}
+
+input[type="number"],
+input[type="text"],
+select {
+  flex: 1;
+  padding: 0.5em 0.7em;
+  font-size: 1rem;
+  border: 2px solid #a8c1e8;
+  border-radius: 6px;
+  outline-offset: 2px;
+  transition: border-color 0.25s ease;
+}
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+select:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 0 8px rgba(11,61,145,0.3);
+}
+
+/* Player name inputs container */
+#playersContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  margin-bottom: 1.5rem;
+}
+
+.playerNameInput {
+  flex: 1 1 140px;
+  min-width: 120px;
+  padding: 0.4em 0.6em;
+  font-size: 1rem;
+  border: 2px solid #a8c1e8;
+  border-radius: 6px;
+  transition: border-color 0.25s ease;
+}
+
+.playerNameInput:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 0 8px rgba(11,61,145,0.3);
+}
+
+/* Buttons */
+button {
+  background: #0b3d91;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.55em 1.25em;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  user-select: none;
+}
+
+button:hover:not(:disabled) {
+  background: #1257bf;
+}
+
+button:disabled {
+  background: #a0afcf;
+  cursor: not-allowed;
+}
+
+/* Draft Section */
+
+#categoryDisplay {
+  font-weight: 900;
+  font-size: 2rem;
+  color: #0b3d91;
+  text-align: center;
+  margin-bottom: 1.2rem;
+  text-shadow: 0 0 6px rgba(11, 61, 145, 0.4);
+  user-select: none;
+}
+
+#draftArea {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.playerDraft {
+  background: #f7faff;
+  border-radius: 10px;
+  padding: 1rem 1.2rem;
+  width: 280px;
+  box-shadow: 0 3px 8px rgba(11,61,145,0.15);
+  user-select: text;
+}
+
+.playerDraft h3 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  color: #0b3d91;
+  text-align: center;
+}
+
+.playerDraft ul {
+  list-style: none;
+  padding-left: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin-bottom: 0.5rem;
+}
+
+.playerDraft ul li {
+  background: white;
+  border-radius: 5px;
+  padding: 0.3em 0.5em;
+  margin-bottom: 0.3em;
+  box-shadow: 0 1px 3px rgba(11,61,145,0.1);
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  justify-content: space-between;
+  user-select: text;
+}
+
+.playerDraft ul li:last-child {
+  margin-bottom: 0;
+}
+
+/* Draft form inside playerDraft */
+.draftForm {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.draftForm input[type="text"],
+.draftForm select {
+  flex: 1 1 120px;
+  padding: 0.4em 0.6em;
+  font-size: 1rem;
+  border: 2px solid #a8c1e8;
+  border-radius: 6px;
+  transition: border-color 0.25s ease;
+}
+
+.draftForm input[type="text"]:focus,
+.draftForm select:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 0 6px rgba(11,61,145,0.4);
+}
+
+.draftForm button {
+  flex: 0 0 auto;
+  padding: 0.45em 1em;
+  font-weight: 700;
+  font-size: 1rem;
+  background: #0b3d91;
+  border-radius: 6px;
+  transition: background-color 0.25s ease;
+}
+
+.draftForm button:hover {
+  background: #1257bf;
+}
+
+/* Result Section */
+
+#resultSection {
+  user-select: text;
+}
+
+#promptOutput {
+  width: 100%;
+  font-family: Consolas, monospace;
+  font-size: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 2px solid #a8c1e8;
+  resize: vertical;
+  min-height: 180px;
+  box-shadow: inset 0 0 8px rgba(11,61,145,0.1);
+  background: #f7faff;
+  color: #1e2a38;
+}
+
+#promptOutput:focus {
+  border-color: #0b3d91;
+  box-shadow: 0 0 10px rgba(11,61,145,0.4);
+  outline: none;
+}
+
+#resultSection button,
+#resultSection a {
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.55em 1.3em;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  margin-right: 0.6rem;
+  text-decoration: none;
+  display: inline-block;
+  user-select: none;
+}
+
+#resultSection button {
+  background: #0b3d91;
+  color: white;
+  transition: background-color 0.25s ease;
+}
+
+#resultSection button:hover {
+  background: #1257bf;
+}
+
+#resultSection a {
+  background: #e2eaf6;
+  color: #0b3d91;
+  border: 2px solid #0b3d91;
+  line-height: 1.3;
+  padding-top: 0.6em;
+  padding-bottom: 0.6em;
+}
+
+#resultSection a:hover {
+  background: #c9d9f7;
+  color: #063175;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .playerDraft {
+    width: 100%;
+  }
+  .draftForm {
+    flex-direction: column;
+  }
+  .draftForm input[type="text"],
+  .draftForm select,
+  .draftForm button {
+    width: 100%;
+  }
+}
+
+/* Checkbox styling */
+input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #0b3d91;
+  vertical-align: middle;
+}
