@@ -227,8 +227,8 @@ newPrompt += `${i + 1}. ${pick.character} (${pick.position}) — ${pick.category
   newPrompt += `Please evaluate the final rosters in the following way:\n`;
   newPrompt += `1. **Assess each player's team composition** – identify strengths, weaknesses, and unique combos.\n`;
   newPrompt += `2. **Rate the impact of steals and locks** – who played defensively, who took big risks, and who pulled off sneaky genius moves?\n`;
-  newPrompt += `3. **Assign each team an Overall (OVR) score** from 1 to 100, with a breakdown for Offense, Defense, and Strategy.\n`;
-  newPrompt += `4. **Award fun titles** to players like "Master Thief", "Draft Fortress", "Wildcard Wizard", or "Overachiever of the Year".\n`;
+  newPrompt += `3. **Assign each player an Overal (OVR) score** from 1 to 99 (MLB the show style), with small breakdowns of: Speed/Steal/Power/Contact/Fielding/Clutch for Hitting (DH doesn't need fielding). For Pitching: Velo/Break/Stamina/Control/IQ\n`;
+  newPrompt += `4. **Assign each team an Overall (OVR) score** from 1 to 100, with a breakdown for Offense, Defense, Strategy, Chemistry, and Individual OVR (just etablished).\n`;
   newPrompt += `5. **Declare the ultimate champion** – but don't just state it. Make it sound like a grand sports broadcast moment.\n\n`;
 
   newPrompt += `🎙️ Example Ending: "And with a bold strategy, airtight locks, and a killer RF–CF–LF combo, the winner of the 2025 RanDumBaseball Draft... is... (drumroll)... **SAMUEL!** A true baseball architect!"\n\n`;
