@@ -172,8 +172,8 @@ btn.addEventListener("click", () => {
   }
 
 // Add markers
-p.picks[ownPickIndex]._wasStolen = true; // Took this from someone (gets 🔄)
-players[targetPlayerId].picks[targetPickIndex]._wasReceived = true; // Received a replacement (gets 🚮)
+p.picks[ownPickIndex]._wasStolen = true; // Received a replacement (gets 🚮). This is the inverse right now of how it's supposed to be.
+players[targetPlayerId].picks[targetPickIndex]._wasReceived = true; // Took this from someone (gets 🔄) This is the inverse right now of how it's supposed to be.
 
 
   // Swap picks
@@ -211,14 +211,29 @@ function regeneratePrompt() {
     p.picks.forEach((pick, i) => {
       const isLocked = p.lockedIndices.includes(i);
       const lockNote = isLocked ? " 🔒" : "";
-const stealNote = pick._wasStolen ? " 🔄" : pick._wasReceived ? " 🚮" : "";
+const stealNote = pick._wasStolen ? "🚮" : pick._wasReceived ? "🔄" : "";
 newPrompt += `- ${pick.character} (${pick.position}) — ${pick.category}${lockNote}${stealNote}\n`;
 
     });
     newPrompt += "\n";
   });
-newPrompt += `🔄 means the player took this pick from another player.\n🚮 means the player received this pick because one of theirs was stolen.\n\nEvaluate these baseball lineups after post-draft strategy (locks + steals). Assign OVR ratings and declare the strongest roster.`;
-  promptOutput.value = newPrompt;
+  newPrompt += `✨ SYMBOL KEY ✨\n`;
+  newPrompt += `🔒 Locked: This pick was protected and safe from being stolen.\n`;
+  newPrompt += `🔄 Snatched!: This pick was stolen **by** this player from another team's lineup.\n`;
+  newPrompt += `🚮 Given: This pick was **taken from** this player and they received another in return.\n\n`;
+
+  newPrompt += `📣 ANALYSIS REQUEST 📣\n`;
+  newPrompt += `You are now the ultimate baseball strategist, analyst, and hype announcer.\n\n`;
+  newPrompt += `Please evaluate the final rosters in the following way:\n`;
+  newPrompt += `1. **Assess each player's team composition** – identify strengths, weaknesses, and unique combos.\n`;
+  newPrompt += `2. **Rate the impact of steals and locks** – who played defensively, who took big risks, and who pulled off sneaky genius moves?\n`;
+  newPrompt += `3. **Assign each team an Overall (OVR) score** from 1 to 100, with a breakdown for Offense, Defense, and Strategy.\n`;
+  newPrompt += `4. **Award fun titles** to players like "Master Thief", "Draft Fortress", "Wildcard Wizard", or "Overachiever of the Year".\n`;
+  newPrompt += `5. **Declare the ultimate champion** – but don't just state it. Make it sound like a grand sports broadcast moment.\n\n`;
+
+  newPrompt += `🎙️ Example Ending: "And with a bold strategy, airtight locks, and a killer RF–CF–LF combo, the winner of the 2025 RanDumBaseball Draft... is... (drumroll)... **SAMUEL!** A true baseball architect!"\n\n`;
+
+  newPrompt += `Have fun, go wild with the color commentary, and make the analysis unforgettable! 🧢🔥\n`;  promptOutput.value = newPrompt;
 }
 
 })();
