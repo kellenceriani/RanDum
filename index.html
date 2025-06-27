@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -21,66 +21,98 @@
       padding: 1em;
     }
     #sidebar.open { transform: translateX(0); }
-    #toggleSidebar { position: fixed; right: 0; top: 50px; z-index: 1000; background: #007bff; color: white; padding: 0.5em; cursor: pointer; }
-    #timerDisplay { font-size: 1.2em; color: red; margin-top: 0.5em; }
+    #toggleSidebar {
+      position: fixed;
+      right: 0;
+      top: 50px;
+      z-index: 1000;
+      background: #007bff;
+      color: white;
+      padding: 0.5em;
+      cursor: pointer;
+      border-radius: 6px 0 0 6px;
+    }
+    #timerDisplay {
+      font-size: 1.2em;
+      color: red;
+      margin-top: 0.5em;
+    }
+    fieldset {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    legend {
+      font-weight: bold;
+      padding: 0 0.5rem;
+    }
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
   </style>
 </head>
 <body>
   <main>
     <h1>RanDumBaseball! Draft</h1>
+
     <section id="setup">
-      <div class="row">
-        <label for="playerCount">Number of players (2-8):</label>
-        <input type="number" id="playerCount" min="2" max="8" value="2" />
-      </div>
-      <div id="playersContainer"></div>
-      <div class="row">
-        <label>
-          <input type="checkbox" id="snakeDraftCheckbox" />
-          Enable Snake Draft Mode
-        </label>
-      </div>
-    <div class="row">
-        <label>
-            <input type="checkbox" id="lockedPositionsCheckbox" />
-            Enable Locked Position Mode (fixed positions, adjustable batting order)
-        </label>
-    </div>
-          
-    <div class="row">
-        <label for="rosterTypeSelect">Roster Type:</label>
-        <select id="rosterTypeSelect">
+      <fieldset>
+        <legend>Draft Setup</legend>
+        <div class="row">
+          <label for="playerCount">Number of players (2–8):</label>
+          <input type="number" id="playerCount" min="2" max="8" value="2" />
+        </div>
+        <div id="playersContainer"></div>
+        <div class="row">
+          <label for="rosterTypeSelect">Roster Type:</label>
+          <select id="rosterTypeSelect">
             <option value="standard">Standard (10 picks)</option>
             <option value="expanded">Expanded (15 picks)</option>
             <option value="xtra">Xtra Expanded (20 picks)</option>
             <option value="small">Small (5 picks)</option>
-        </select>
-    </div>
-<div class="row">
-  <label>
-    <input type="checkbox" id="enableTimerCheckbox" checked />
-    Enable Timer Mode
-  </label>
-</div>
-<div class="row" id="timerControls">
-  <label for="timeSlider">Seconds per pick:</label>
-  <input type="range" id="timeSlider" min="5" max="120" value="30" />
-  <span id="timeValue">30</span>s
-</div>
+          </select>
+        </div>
+      </fieldset>
 
+      <fieldset>
+        <legend>Options</legend>
+        <div class="options-group">
+          <label><input type="checkbox" id="snakeDraftCheckbox" /> Snake Draft Mode</label>
+          <label><input type="checkbox" id="lockedPositionsCheckbox" /> Locked Position Mode</label>
+          <label><input type="checkbox" id="stealPickCheckbox" /> Steal Pick Mode</label>
+        </div>
+      </fieldset>
 
-      <button id="startDraftBtn">Start Draft</button>
+      <fieldset>
+        <legend>Timer</legend>
+        <div class="options-group">
+          <label><input type="checkbox" id="enableTimerCheckbox" checked /> Enable Timer Mode</label>
+          <div id="timerControls" class="row">
+            <label for="timeSlider">Seconds per pick:</label>
+            <input type="range" id="timeSlider" min="5" max="120" value="30" />
+            <span id="timeValue">30</span>s
+          </div>
+        </div>
+      </fieldset>
+
+      <div style="text-align: center; margin-top: 1.5rem;">
+        <button id="startDraftBtn">Start Draft</button>
+      </div>
     </section>
 
     <section id="draftSection" class="hidden">
-    <h2>
+      <h2>
         Category: <span id="categoryDisplay"></span>
         <span id="categoryCounter" style="font-size: 0.6em; color: red; margin-left: 0.5em;"></span>
-    </h2>
+      </h2>
       <div id="timerDisplay"></div>
       <div id="draftArea"></div>
       <button id="finishDraftBtn" class="hidden">Finish Draft & Generate Prompt</button>
     </section>
+
     <section id="resultSection" class="hidden">
       <h2>Draft Summary & Prompt</h2>
       <textarea id="promptOutput" readonly rows="12"></textarea>
@@ -91,6 +123,7 @@
       </div>
     </section>
   </main>
+
   <div id="toggleSidebar">▶ Picks</div>
   <div id="sidebar">
     <h3>Picks</h3>
@@ -102,8 +135,9 @@
     <ul id="picksList"></ul>
   </div>
 
-<script src="app.js"></script>
-<script src="categories.js"></script>
-<script src="PicksAndTime.js"></script>
+  <script src="app.js"></script>
+  <script src="categories.js"></script>
+  <script src="PicksAndTime.js"></script>
+  <script src="StealPick.js"></script>
 </body>
 </html>

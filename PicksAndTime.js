@@ -101,7 +101,7 @@
       window.startPickTimer(() => {
         const form = forms[0];
         const input = form.querySelector("input");
-        if (input) input.value = "DnA"; // Auto-pick fallback
+        if (input) input.value = "DnA (ChatGPT, Give Bad Anwser from Category)"; // Auto-pick fallback
         form.requestSubmit();
       });
     }
