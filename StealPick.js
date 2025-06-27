@@ -212,7 +212,7 @@ function regeneratePrompt() {
       const isLocked = p.lockedIndices.includes(i);
       const lockNote = isLocked ? " 🔒" : "";
 const stealNote = pick._wasStolen ? "🚮" : pick._wasReceived ? "🔄" : "";
-newPrompt += `- ${pick.character} (${pick.position}) — ${pick.category}${lockNote}${stealNote}\n`;
+newPrompt += `${i + 1}. ${pick.character} (${pick.position}) — ${pick.category}${lockNote}${stealNote}\n`;
 
     });
     newPrompt += "\n";
