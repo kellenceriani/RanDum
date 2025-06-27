@@ -1,38 +1,40 @@
 (() => {
-  let categories = [];
+  let totalCategories = 0;
 
-  async function loadCategories() {
-categories = [
-    "Superheroes", "Mario Characters", "TV Characters", "Dog Breeds", "Famous Scientists",
-    "Movie Villains", "Mythical Creatures", "Star Wars Characters", "Pokemon", "NBA players (past/present)",
-    "Pixar Characters", "Disney Characters", "Avengers", "DC Characters", "Inanimate Objects",
-    "Anime Characters", "Harry Potter Characters", "Marvel Villains", "Cartoon Characters", "Video Game Characters",
-    "Famous Artists", "Famous Athletes", "Comedians", "SNL Cast Members", "Rappers",
-    "Politicians", "Rock Bands", "Nonfictional Women", "Robots", "Sitcom Characters",
-    "Fast Food Chains", "Snacks", "Cereals", "Candies", "Fruits",
-    "Vegetables", "Soft Drinks", "Pizza Toppings", "Ice Cream Flavors", "Sandwich Types",
-    "Reptiles", "(mostly) White things", "(mostly) orange things", "Mobile Games", "Numbers",
-    "Beautiful Things", "Fantasy Book Characters", "RPG Characters", "Baseball Players (Past/Present)", "Girly things",
-    "Countries", "Cities", "Landmarks", "Fictional Stupid Characters", "Historical Figures",
-    "Inventors (fiction/nonfiction)", "School related things", "Cartoon Network Characters", "Nickelodeon Characters", "Royalty",
-    "Nintendo Characters (no pokemon)", "Bird Species", "Insects", "Marine Animals", "Jungle Animals",
-    "Animals", "Farm Animals", "Mammals", "Fictional Animals", "Sci-Fi Characters",
-    "YouTubers", "Phone Apps", "Influencers", "Sports Movie/Show Characters", "Detriments to Society",
-    "Jobs/Occupations", "Fictional Inanimate Objects", "Fictional Women", "Soccer players (past/present)", "NFL players (past/present)","Cars", "Historic Events", "Inventions", "Essential Items/Objects", "Famous Couples",
-    "Travel Destinations", "Magic Related things", "Superpowers", "Fictional Locations", "Gross things",
-    "Comedians", "Toys", "Cartoon Network Shows", "Nickelodeon Shows", "Fictional Kid Characters",
-    "Princesses (fiction & nonfiction)", "Sidekicks", "Monkeys (fiction & nonfiction)", "Movies", "Fantasy Novels",
-    "Villains", "Household Items", "Common Names", "Olympic Sports", "Sports Mascots",
-    "Gods/Goddesses", "Big things (real)", "Holiday Related Entities", "Stupid People", "Smart People", "Anything starting with 'A'", "Anything starting with 'B'", "Anything starting with 'C'", "Anything starting with 'D'", "Anything starting with 'E'", "Anything starting with 'F'", "Anything starting with 'G'", "Anything starting with 'H'", "Anything starting with 'I'", "Anything starting with 'J'", "Anything starting with 'K'", "Anything starting with 'L'", "Anything starting with 'M'", "Anything starting with 'N'", "Anything starting with 'O'", "Anything starting with 'P'", "Anything starting with 'Q'", "Anything starting with 'R'", "Anything starting with 'S'", "Anything starting with 'T'", "Anything starting with 'U'", "Anything starting with 'V'", "Anything starting with 'W'", "Anything starting with 'X'", "Anything starting with 'Y'", "Anything starting with 'Z'",
-  ];
+  const rosterTypes = {
+    standard: {
+      positions: ["C", "1B", "2B", "SS", "3B", "LF", "CF", "RF", "DH", "SP"]
+    },
+    expanded: {
+      positions: ["C", "1B", "2B", "SS", "3B", "LF", "CF", "RF", "DH", "SP#1", "SP#2", "SP#3", "CP", "UTIL#1", "UTIL#2"]
+    },
+    xtra: {
+      positions: [
+        "C", "1B", "2B", "SS", "3B", "LF", "CF", "RF", "DH",
+        "SP#1", "SP#2", "SP#3", "SP#4", "RP#1", "RP#2", "CP",
+        "UTIL#1", "UTIL#2", "UTIL#3", "UTIL#4"
+      ]
+  },
+  small: {
+    positions: ["OF", "IF#1", "IF#2", "SP", "DH"]
   }
+  };
 
-  const lineupPositions = ["CF", "LF", "RF", "2B", "3B", "SS", "1B", "C", "DH", "SP"];
-  const battingOrderPositions = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+let battingOrderPositions = [];
+
+function updateBattingOrderPositions(rosterKey) {
+  // Default to 1–9 for most rosters
+  battingOrderPositions = rosterKey === "small"
+    ? ["1", "2", "3", "4"]
+    : ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+}
+
 
   const playerCountInput = document.getElementById("playerCount");
   const playersContainer = document.getElementById("playersContainer");
   const snakeDraftCheckbox = document.getElementById("snakeDraftCheckbox");
+  const lockedPositionsCheckbox = document.getElementById("lockedPositionsCheckbox");
+  const rosterTypeSelect = document.getElementById("rosterTypeSelect");
   const startDraftBtn = document.getElementById("startDraftBtn");
 
   const setupSection = document.getElementById("setup");
@@ -52,21 +54,36 @@ categories = [
   let totalPicks = 0;
   let currentCategory = "";
   let currentRound = 0;
+  let lockedPositionPickOrder = [];
+  let activeRoster = rosterTypes.standard;
+
+  function initCategories() {
+    totalCategories = typeof getCategoryCount === "function" ? getCategoryCount() : (categories ? categories.length : 0);
+  }
 
   function generateSnakePickOrder(playerCount, totalPicksNeeded) {
     const order = [];
     while (order.length < totalPicksNeeded) {
       const forward = Array.from({ length: playerCount }, (_, i) => i);
       const backward = [...forward].reverse();
-
       order.push(...forward);
       if (order.length < totalPicksNeeded) order.push(...backward);
     }
     return order.slice(0, totalPicksNeeded);
   }
 
+  function generateLockedPositionPickOrder(playerCount, positions) {
+    const order = [];
+    for (let i = 0; i < positions.length; i++) {
+      for (let p = 0; p < playerCount; p++) {
+        order.push(positions[i]);
+      }
+    }
+    return order;
+  }
+
   function remainingPicks(player) {
-    return 10 - player.lineup.length;
+    return activeRoster.positions.length - player.lineup.length;
   }
 
   function renderPlayerInputs() {
@@ -87,15 +104,20 @@ categories = [
   renderPlayerInputs();
 
   function animateCategory(newCategory) {
+    const index = categories.indexOf(newCategory);
+    const displayIndex = index >= 0 ? index + 1 : '?';
     categoryDisplay.classList.remove("spin");
     void categoryDisplay.offsetWidth;
     categoryDisplay.textContent = newCategory;
+    document.getElementById("categoryCounter").textContent = `category: ${displayIndex}/${totalCategories}`;
     categoryDisplay.classList.add("spin");
   }
 
   function renderDraftArea() {
     draftArea.innerHTML = "";
     const currentPlayerIndex = pickOrder[currentPick];
+    const lockedMode = lockedPositionsCheckbox.checked;
+
     players.forEach((p, idx) => {
       const playerDiv = document.createElement("div");
       playerDiv.className = "playerDraft";
@@ -112,19 +134,37 @@ categories = [
       const battingOrderList = document.createElement("ol");
       battingOrderList.innerHTML = "<strong>Batting Order:</strong>";
       battingOrderList.style.paddingLeft = "1.5em";
-      for (let i = 1; i <= 9; i++) {
-        const pick = p.lineup.find(l => l.battingOrder === i && l.position !== "SP");
-        const li = document.createElement("li");
-        li.style.marginLeft = "1em";
-        li.textContent = pick ? `${pick.character} (${pick.position}) — ${pick.category}` : "[Not Picked]";
-        battingOrderList.appendChild(li);
-      }
+const maxBattingSlot = rosterTypeSelect.value === "small" ? 4 : 9;
+for (let i = 1; i <= maxBattingSlot; i++) {
+  const pick = p.lineup.find(l => l.battingOrder === i);
+  const li = document.createElement("li");
+  li.style.marginLeft = "1em";
+  li.textContent = pick ? `${pick.character} (${pick.position}) — ${pick.category}` : "[Not Picked]";
+  battingOrderList.appendChild(li);
+}
+const remainingPositions = activeRoster.positions.filter(pos => !p.lineup.some(pick => pick.position === pos));
+if (remainingPositions.length > 0) {
+  const redText = document.createElement("div");
+  redText.style.fontSize = "0.7em";
+  redText.style.color = "red";
+  redText.style.marginTop = "0.2em";
+  redText.textContent = `Remaining Positions: ${remainingPositions.join(", ")}`;
+  playerDiv.appendChild(redText);
+}
+
       playerDiv.appendChild(battingOrderList);
 
-      const spPick = p.lineup.find(l => l.position === "SP");
-      const spDiv = document.createElement("div");
-      spDiv.innerHTML = `<strong>SP:</strong> ${spPick ? `${spPick.character} — ${spPick.category}` : "[Not Picked]"}`;
-      playerDiv.appendChild(spDiv);
+      const extras = p.lineup.filter(l => l.battingOrder === null);
+      if (extras.length) {
+        const benchList = document.createElement("ul");
+        benchList.innerHTML = "<strong>Bench/Pitching:</strong>";
+        extras.forEach(pick => {
+          const li = document.createElement("li");
+          li.textContent = `${pick.position}: ${pick.character} — ${pick.category}`;
+          benchList.appendChild(li);
+        });
+        playerDiv.appendChild(benchList);
+      }
 
       if (idx === currentPlayerIndex) {
         const form = document.createElement("form");
@@ -136,27 +176,38 @@ categories = [
         charInput.required = true;
         charInput.style.marginRight = "0.5em";
 
-        const posSelect = document.createElement("select");
-        posSelect.required = true;
-        posSelect.style.marginRight = "0.5em";
+        let posSelect;
+        let lockedPosition = null;
 
-        const takenPositions = p.lineup.map(i => i.position);
-        lineupPositions.forEach(pos => {
-          if (!takenPositions.includes(pos)) {
-            const option = document.createElement("option");
-            option.value = pos;
-            option.textContent = pos;
-            posSelect.appendChild(option);
-          }
-        });
+        if (lockedMode) {
+          lockedPosition = lockedPositionPickOrder[currentPick];
+          const posDisplay = document.createElement("span");
+          posDisplay.textContent = lockedPosition;
+          posDisplay.style.marginRight = "1em";
+          form.appendChild(posDisplay);
+        } else {
+          posSelect = document.createElement("select");
+          posSelect.required = true;
+          posSelect.style.marginRight = "0.5em";
+
+          const taken = p.lineup.map(i => i.position);
+          activeRoster.positions.forEach(pos => {
+            if (!taken.includes(pos)) {
+              const option = document.createElement("option");
+              option.value = pos;
+              option.textContent = pos;
+              posSelect.appendChild(option);
+            }
+          });
+
+          form.appendChild(posSelect);
+        }
 
         const battingOrderSelect = document.createElement("select");
         battingOrderSelect.required = true;
         battingOrderSelect.style.marginRight = "0.5em";
 
-        const takenOrders = p.lineup
-          .filter(l => l.position !== "SP")
-          .map(l => l.battingOrder);
+        const takenOrders = p.lineup.map(l => l.battingOrder).filter(b => b);
         battingOrderPositions.forEach(n => {
           if (!takenOrders.includes(+n)) {
             const option = document.createElement("option");
@@ -167,7 +218,8 @@ categories = [
         });
 
         function updateBattingVisibility() {
-          if (posSelect.value === "SP") {
+          const posVal = lockedMode ? lockedPosition : posSelect.value;
+          if (posVal.includes("SP") || posVal.includes("RP") || posVal.includes("CP") || posVal.includes("UTIL")) {
             battingOrderSelect.style.display = "none";
             battingOrderSelect.required = false;
           } else {
@@ -176,7 +228,7 @@ categories = [
           }
         }
 
-        posSelect.addEventListener("change", updateBattingVisibility);
+        if (!lockedMode) posSelect.addEventListener("change", updateBattingVisibility);
         updateBattingVisibility();
 
         const submitBtn = document.createElement("button");
@@ -184,28 +236,26 @@ categories = [
         submitBtn.textContent = "Pick";
 
         form.appendChild(charInput);
-        form.appendChild(posSelect);
         form.appendChild(battingOrderSelect);
         form.appendChild(submitBtn);
 
         form.addEventListener("submit", e => {
           e.preventDefault();
           const character = charInput.value.trim();
-          const position = posSelect.value;
-          const battingOrder = position !== "SP" ? parseInt(battingOrderSelect.value, 10) : null;
+          const position = lockedMode ? lockedPosition : posSelect.value;
+          const battingOrder = position.match(/SP|RP|CP|UTIL/) ? null : parseInt(battingOrderSelect.value, 10);
 
-          if (!character || !position || (position !== "SP" && !battingOrder)) return;
+          if (!character || !position || (!battingOrder && battingOrder !== 0 && battingOrder !== null)) return;
 
           if (p.lineup.find(l => l.position === position)) return alert("Position already drafted.");
-          if (position !== "SP" && p.lineup.find(l => l.battingOrder === battingOrder)) return alert("Batting slot taken.");
+          if (battingOrder && p.lineup.find(l => l.battingOrder === battingOrder)) return alert("Batting slot taken.");
 
           p.lineup.push({ character, position, category: currentCategory, battingOrder });
 
           currentPick++;
 
-          if (players.every(pl => pl.lineup.length === 10)) {
+          if (players.every(pl => pl.lineup.length === activeRoster.positions.length)) {
             finishDraftBtn.classList.remove("hidden");
-            draftArea.innerHTML = "";
             renderDraftArea();
             return;
           }
@@ -215,6 +265,8 @@ categories = [
             animateCategory(currentCategory);
           } else {
             categoryDisplay.textContent = currentCategory;
+            const index = categories.indexOf(currentCategory);
+            document.getElementById("categoryCounter").textContent = `category: ${index + 1}/${totalCategories}`;
           }
 
           renderDraftArea();
@@ -228,22 +280,34 @@ categories = [
   }
 
   startDraftBtn.addEventListener("click", () => {
+    initCategories();
+
+    const selectedRoster = rosterTypeSelect.value;
+    updateBattingOrderPositions(selectedRoster);
+
+    activeRoster = rosterTypes[selectedRoster];
+
     const inputs = [...document.querySelectorAll(".playerNameInput")];
     players = inputs.map((inp, i) => ({
       name: inp.value.trim() || `Player ${i + 1}`,
       lineup: []
     }));
 
+    totalPicks = players.length * activeRoster.positions.length;
     const isSnake = snakeDraftCheckbox.checked;
-    const picksPerPlayer = 10;
-    totalPicks = players.length * picksPerPlayer;
+    const isLocked = lockedPositionsCheckbox.checked;
 
-    currentPick = 0;
-    currentRound = 0;
+    if (isLocked) {
+      lockedPositionPickOrder = generateLockedPositionPickOrder(players.length, activeRoster.positions);
+    } else {
+      lockedPositionPickOrder = [];
+    }
+
     pickOrder = isSnake
       ? generateSnakePickOrder(players.length, totalPicks)
       : Array.from({ length: totalPicks }, (_, i) => i % players.length);
 
+    currentPick = 0;
     currentCategory = categories[Math.floor(Math.random() * categories.length)];
     animateCategory(currentCategory);
 
@@ -259,17 +323,17 @@ categories = [
     resultSection.classList.remove("hidden");
 
     let summary = `Draft Summary:\n\n`;
-
     players.forEach(p => {
       summary += `${p.name}'s Lineup:\n`;
-
-      const batting = p.lineup.filter(l => l.position !== "SP").sort((a, b) => a.battingOrder - b.battingOrder);
+      const batting = p.lineup.filter(l => l.battingOrder).sort((a, b) => a.battingOrder - b.battingOrder);
       batting.forEach(pick => {
         summary += `-${pick.battingOrder}: ${pick.character} (${pick.position}) — ${pick.category}\n`;
       });
-
-      const sp = p.lineup.find(l => l.position === "SP");
-      summary += `- SP: ${sp ? `${sp.character} — ${sp.category}` : "[No pick]"}\n\n`;
+      const extras = p.lineup.filter(l => !l.battingOrder);
+      extras.forEach(pick => {
+        summary += `- ${pick.position}: ${pick.character} — ${pick.category}\n`;
+      });
+      summary += "\n";
     });
 
     summary += `Evaluate these baseball lineups for fit, talent, and strategy. Assign MLB The Show-style OVR ratings and pick the strongest roster.`;
@@ -290,6 +354,4 @@ categories = [
       editPromptBtn.textContent = "Edit Prompt";
     }
   });
-
-  loadCategories();
 })();

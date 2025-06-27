@@ -22,11 +22,31 @@
           Enable Snake Draft Mode
         </label>
       </div>
+    <div class="row">
+        <label>
+            <input type="checkbox" id="lockedPositionsCheckbox" />
+            Enable Locked Position Mode (fixed positions, adjustable batting order)
+        </label>
+    </div>
+    <div class="row">
+        <label for="rosterTypeSelect">Roster Type:</label>
+        <select id="rosterTypeSelect">
+            <option value="standard">Standard (10 picks)</option>
+            <option value="expanded">Expanded (15 picks)</option>
+            <option value="xtra">Xtra Expanded (20 picks)</option>
+            <option value="small">Small (5 picks)</option>
+        </select>
+    </div>
+
       <button id="startDraftBtn">Start Draft</button>
     </section>
 
     <section id="draftSection" class="hidden">
-      <h2>Category: <span id="categoryDisplay"></span></h2>
+    <h2>
+        Category: <span id="categoryDisplay"></span>
+        <span id="categoryCounter" style="font-size: 0.6em; color: red; margin-left: 0.5em;"></span>
+    </h2>
+
       <div id="draftArea"></div>
       <button id="finishDraftBtn" class="hidden">Finish Draft & Generate Prompt</button>
     </section>
@@ -42,6 +62,7 @@
     </section>
   </main>
 
-  <script src="app.js"></script>
+ <script src="app.js"></script>
+<script src="categories.js"></script>
 </body>
 </html>
