@@ -1,11 +1,10 @@
 (() => {
   const finishDraftBtn = document.getElementById("finishDraftBtn");
   const resultSection = document.getElementById("resultSection");
-  const draftSection = document.getElementById("draftSection");
   const promptOutput = document.getElementById("promptOutput");
+  const stealModeCheckbox = document.getElementById("stealPickCheckbox");
 
   let players = [];
-  const stealModeCheckbox = document.getElementById("stealPickCheckbox");
 
   finishDraftBtn.addEventListener("click", () => {
     if (!stealModeCheckbox.checked) return;
@@ -28,27 +27,13 @@
       const lines = block.split("\n");
       const name = lines[0].replace(/'s Lineup:$/, "").trim();
       const picks = lines.slice(1).map(line => {
-        let match = line.match(/^\d+\.\s*([^()]+)\(([^)]+)\)\s*—\s*(.*)/); // Final phase
-        //if (!match) match = line.match(/-\s*\d+:\s*([^()]+)\(([^)]+)\)\s*—\s*(.*)/); // Batting order
-if (!match) {
-  // Match extras like: - SP: Ronaldo — Soccer Players
-  match = line.match(/-\s*([A-Z0-9#]+):\s*([^—]+)—\s*(.*)/);
-  if (match) {
-    const [, position, character, category] = match.map(x => x.trim());
-    return { character, position, category, locked: false };
-  }
-}
-        if (!match) return null;
-
-        if (match.length === 4) {
-          const [, character, position, category] = match.map(x => x.trim());
-          return { character, position, category, locked: false };
-        } else if (match.length === 5) {
-          const [, , character, position, category] = match.map(x => x.trim());
-          return { character, position, category, locked: false };
+        let match = line.match(/^\d+\.\s*([^()]+)\s*\(([^)]+)\)\s*—\s*(.*)/);
+        if (!match) {
+          match = line.match(/-\s*([^()]+)\s*\(([^)]+)\)\s*—\s*(.*)/);
         }
-
-        return null;
+        if (!match) return null;
+        const [, character, position, category] = match.map(x => x.trim());
+        return { character, position, category, locked: false };
       }).filter(Boolean);
       return { name, picks, lockedIndices: [], stealUsed: false };
     });
@@ -58,7 +43,7 @@ if (!match) {
     resultSection.insertAdjacentHTML("beforeend", `
       <div id="lockPhase" style="margin-top:1em;">
         <h3>🔒 Lock Phase</h3>
-        <p>Each player must lock 2 picks. These cannot be stolen.</p>
+        <p>Each player must lock 2 picks. These cannot be stolen or swapped.</p>
         <div id="lockContainers"></div>
         <button id="confirmLocksBtn" disabled>Confirm Locks</button>
       </div>
@@ -75,44 +60,32 @@ if (!match) {
         checkbox.dataset.pick = i;
         checkbox.addEventListener("change", validateLocks);
         div.appendChild(checkbox);
-        div.insertAdjacentText("beforeend", ` ${pick.character} (${pick.position}) — ${pick.category}\n`);
+        div.insertAdjacentText("beforeend", ` ${pick.character} (${pick.position}) — ${pick.category}`);
         div.appendChild(document.createElement("br"));
       });
       container.appendChild(div);
       container.appendChild(document.createElement("br"));
     });
 
-    document.getElementById("confirmLocksBtn").addEventListener("click", () => {
-      const checkboxes = container.querySelectorAll("input[type='checkbox']");
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          const player = players[cb.dataset.player];
-          player.lockedIndices.push(+cb.dataset.pick);
-        }
-      });
-      runStealPhase();
-    });
-
     function validateLocks() {
       const confirmBtn = document.getElementById("confirmLocksBtn");
-      let valid = true;
       const grouped = {};
-
       container.querySelectorAll("input[type='checkbox']").forEach(cb => {
         const pid = cb.dataset.player;
         grouped[pid] = grouped[pid] || 0;
         if (cb.checked) grouped[pid]++;
       });
-
-      for (let id in grouped) {
-        if (grouped[id] !== 2) {
-          valid = false;
-          break;
-        }
-      }
-
-      confirmBtn.disabled = !valid;
+      confirmBtn.disabled = !Object.values(grouped).every(count => count === 2);
     }
+
+    document.getElementById("confirmLocksBtn").addEventListener("click", () => {
+      container.querySelectorAll("input[type='checkbox']").forEach(cb => {
+        if (cb.checked) {
+          players[cb.dataset.player].lockedIndices.push(+cb.dataset.pick);
+        }
+      });
+      runStealPhase();
+    });
   }
 
   function runStealPhase() {
@@ -129,81 +102,80 @@ if (!match) {
 
     const container = document.getElementById("stealContainer");
 
-    players.forEach((p, pIdx) => {
+    players.forEach((player, pIdx) => {
       const div = document.createElement("div");
-      div.innerHTML = `<strong>${p.name}'s Turn:</strong><br>`;
+      div.innerHTML = `<strong>${player.name}'s Turn:</strong><br>`;
 
-      const selectTargetPlayer = document.createElement("select");
-      selectTargetPlayer.id = `targetPlayer-${pIdx}`;
-      selectTargetPlayer.innerHTML = `<option disabled selected value="">-- Choose Opponent --</option>` +
-        players.map((op, i) => {
-          if (i === pIdx) return "";
-          return `<option value="${i}">${op.name}</option>`;
-        }).join("");
+      const selectOpponent = document.createElement("select");
+      selectOpponent.innerHTML = `<option disabled selected value="">-- Choose Opponent --</option>` +
+        players.map((op, i) => (i === pIdx ? "" : `<option value="${i}">${op.name}</option>`)).join("");
 
-      const selectTargetPick = document.createElement("select");
-      selectTargetPick.id = `targetPick-${pIdx}`;
-      selectTargetPick.innerHTML = `<option>Select a player first</option>`;
+      const selectPick = document.createElement("select");
+      selectPick.innerHTML = `<option>Select opponent first</option>`;
 
-      const btn = document.createElement("button");
-      btn.textContent = "Confirm Steal";
-      btn.disabled = true;
+      const confirmBtn = document.createElement("button");
+      confirmBtn.textContent = "Confirm Steal";
+      confirmBtn.disabled = true;
 
-      selectTargetPlayer.addEventListener("change", () => {
-        const targetId = +selectTargetPlayer.value;
+      selectOpponent.addEventListener("change", () => {
+        const targetId = +selectOpponent.value;
         const targetPlayer = players[targetId];
-        const available = targetPlayer.picks
-          .map((pick, i) => ({ ...pick, index: i }))
+
+        const eligible = targetPlayer.picks
+          .map((pick, idx) => ({ ...pick, index: idx }))
           .filter(pick =>
             !targetPlayer.lockedIndices.includes(pick.index) &&
             !pick._wasStolen &&
-            !pick._wasReceived
+            player.picks.some((ownPick, i) =>
+              ownPick.position === pick.position && !player.lockedIndices.includes(i)
+            )
           );
 
-        if (!available.length) {
-          selectTargetPick.innerHTML = `<option disabled>No unlocked picks</option>`;
-          btn.disabled = true;
-          return;
+        if (!eligible.length) {
+          selectPick.innerHTML = `<option disabled>No eligible swaps</option>`;
+          confirmBtn.disabled = true;
+        } else {
+          selectPick.innerHTML = eligible.map(p =>
+            `<option value="${p.index}" data-pos="${p.position}">${p.character} (${p.position}) — ${p.category}</option>`
+          ).join("");
+          confirmBtn.disabled = false;
         }
-
-        selectTargetPick.innerHTML = available.map(pick =>
-          `<option value="${pick.index}" data-position="${pick.position}">${pick.character} (${pick.position}) — ${pick.category}</option>`
-        ).join("");
-        btn.disabled = false;
       });
 
-      btn.addEventListener("click", () => {
-        const targetPlayerId = +selectTargetPlayer.value;
-        const targetPickIndex = +selectTargetPick.value;
-        const targetPick = players[targetPlayerId].picks[targetPickIndex];
-        const position = targetPick.position;
+      confirmBtn.addEventListener("click", () => {
+        const opponentId = +selectOpponent.value;
+        const opponent = players[opponentId];
+        const targetPickIndex = +selectPick.value;
+        const targetPick = opponent.picks[targetPickIndex];
+        const pos = targetPick.position;
 
-        const ownPickIndex = p.picks.findIndex((pick, i) =>
-          pick.position === position && !p.lockedIndices.includes(i)
+        const ownPickIndex = player.picks.findIndex((p, i) =>
+          p.position === pos && !player.lockedIndices.includes(i)
         );
 
         if (ownPickIndex === -1) {
-          alert(`No unlocked pick at position ${position} to swap.`);
+          alert("No unlocked pick to swap in that position.");
           return;
         }
 
-        p.picks[ownPickIndex]._wasStolen = true;
-        players[targetPlayerId].picks[targetPickIndex]._wasReceived = true;
+        // Perform strict position-based swap
+        const tempOwn = { ...player.picks[ownPickIndex], _wasStolen: true };
+        const tempOpponent = { ...targetPick, _wasReceived: true };
 
-        const temp = { ...p.picks[ownPickIndex] };
-        p.picks[ownPickIndex] = { ...targetPick };
-        players[targetPlayerId].picks[targetPickIndex] = temp;
+        player.picks[ownPickIndex] = tempOpponent;
+        opponent.picks[targetPickIndex] = tempOwn;
 
-        btn.disabled = true;
-        selectTargetPlayer.disabled = true;
-        selectTargetPick.disabled = true;
+        // Lock the buttons to prevent multiple steals
+        confirmBtn.disabled = true;
+        selectOpponent.disabled = true;
+        selectPick.disabled = true;
       });
 
-      div.appendChild(selectTargetPlayer);
+      div.appendChild(selectOpponent);
       div.appendChild(document.createTextNode(" → "));
-      div.appendChild(selectTargetPick);
+      div.appendChild(selectPick);
       div.appendChild(document.createElement("br"));
-      div.appendChild(btn);
+      div.appendChild(confirmBtn);
       container.appendChild(div);
       container.appendChild(document.createElement("br"));
     });
@@ -218,34 +190,27 @@ if (!match) {
     let newPrompt = `Final Draft Summary (with Locks and Steals):\n\n`;
     players.forEach(p => {
       newPrompt += `${p.name}'s Lineup:\n`;
-let battingNumber = 1;
-p.picks.forEach((pick, i) => {
-  const isLocked = p.lockedIndices.includes(i);
-  const lockNote = isLocked ? " 🔒" : "";
-  const stealNote = pick._wasStolen ? "🚮" : pick._wasReceived ? "🔄" : "";
-
-  const isPitchingOrBench = pick.position.match(/^(SP|RP|CP|UTIL)/);
-  const prefix = isPitchingOrBench ? '-' : `${battingNumber++}.`;
-
-  newPrompt += `${prefix} ${pick.character} (${pick.position}) — ${pick.category}${lockNote}${stealNote}\n`;
-});
-
-      newPrompt += "\n";
+      let batting = 1;
+      p.picks.forEach((pick, i) => {
+        const locked = p.lockedIndices.includes(i) ? " 🔒" : "";
+        const stealNote = pick._wasStolen ? "🚮" : pick._wasReceived ? "🔄" : "";
+        const isPitcher = /^(SP|RP|CP|UTIL|BENCH)/.test(pick.position);
+        const prefix = isPitcher ? `-` : `${batting++}.`;
+        newPrompt += `${prefix} ${pick.character} (${pick.position}) — ${pick.category}${locked}${stealNote}\n`;
+      });
+      newPrompt += `\n`;
     });
+
     newPrompt += `✨ SYMBOL KEY ✨\n`;
     newPrompt += `🔒 Locked: This pick was protected and safe from being stolen.\n`;
     newPrompt += `🔄 Snatched!: This pick was stolen **by** this player from another team's lineup.\n`;
     newPrompt += `🚮 Given: This pick was **taken from** this player and they received another in return.\n\n`;
     newPrompt += `📣 ANALYSIS REQUEST 📣\n`;
-    newPrompt += `You are now the ultimate baseball strategist, analyst, and hype announcer.\n\n`;
     newPrompt += `Please evaluate the final rosters in the following way:\n`;
-    newPrompt += `1. **Assess each player's team composition** – identify strengths, weaknesses, and unique combos.\n`;
-    newPrompt += `2. **Rate the impact of steals and locks** – who played defensively, who took big risks, and who pulled off sneaky genius moves?\n`;
-    newPrompt += `3. **Assign each player an Overal (OVR) score** from 1 to 99 (MLB the show style), with small breakdowns of: Speed/Steal/Power/Contact/Fielding/Clutch for Hitting (DH doesn't need fielding). For Pitching: Velo/Break/Stamina/Control/IQ\n`;
-    newPrompt += `4. **Assign each team an Overall (OVR) score** from 1 to 100, with a breakdown for Offense, Defense, Strategy, Chemistry, and Individual OVR (just etablished).\n`;
-    newPrompt += `5. **Declare the ultimate champion** – but don't just state it. Make it sound like a grand sports broadcast moment.\n\n`;
-    newPrompt += `🎙️ Example Ending: "And with a bold strategy, airtight locks, and a killer RF–CF–LF combo, the winner of the 2025 RanDumBaseball Draft... is... (drumroll)... **SAMUEL!** A true baseball architect!"\n\n`;
-    newPrompt += `Have fun, go wild with the color commentary, and make the analysis unforgettable! 🧢🔥\n`;
+    newPrompt += `1. **Rate the impact of steals and locks** – who played defensively, who took big risks, and who pulled off sneaky genius moves?\n`;
+    newPrompt += `2. **Assign each player an Overal (OVR) score** from 1 to 99 (MLB the show style).\n`;
+    newPrompt += `3. **Assign each team an Overall (OVR) score** from 1 to 100, with breakdowns – identify strengths, weaknesses, and unique combo.\n`;
+    newPrompt += `**Declare the ultimate champion**\n`;
 
     promptOutput.value = newPrompt;
   }
